@@ -2,25 +2,28 @@ const int outPin = 9;
 const int samples = 100;
 uint8_t sineTable[samples];
 void setup() {
-  // Set pin 9 as an output
-  pinMode(outPin, OUTPUT);
+  cli(); // Disable global interrupts
   
-  // Configure Timer 1 for CTC Mode
-  TCCR1A = 0; 
+  TCCR1A = 0; // Reset Timer1 control registers
   TCCR1B = 0;
+  TCNT1 = 0; // Initialize counter
   
-  // Set Compare Match value
-  OCR1A = 1; // 512 / 256 prescaler - 1
+  // Set the compare match register for 1 Hz (16MHz / 1024 / 1Hz - 1)
+  OCR1A = 15624; 
   
-  // Turn on CTC mode (WGM12 bit)
-  bitSet(TCCR1B, WGM12);
+  TCCR1B |= (1 << WGM12); // Turn on CTC (Clear Timer on Compare) mode
+  TCCR1B |= (1 << CS12) | (1 << CS10); // Set the 1024 prescaler
   
-  // Set prescaler to 256 and start the timer
-  bitSet(TCCR1B, CS12); 
+  TIMSK1 |= (1 << OCIE1A); // Enable Timer1 compare match interrupt
   
-  // Enable Timer 1 Output Compare A Match Interrupt
-  bitSet(TIMSK1, OCIE1A);
+  sei(); // Enable global interrupts
 }
+
+ISR(TIMER1_COMPA_vect) {
+  // This code executes exactly once every second
+}
+
+
 void loop() {
   static int i = 0;
 
@@ -28,11 +31,4 @@ void loop() {
 
   i = (i + 1) % samples;
   delayMicroseconds(10);
-}
-
-// Interrupt Service Routine that toggles Pin 9
-ISR(TIMER1_COMPA_vect) {
-  static bool pinState = false;
-  pinState = !pinState;
-  digitalWrite(9, pinState);
 }
