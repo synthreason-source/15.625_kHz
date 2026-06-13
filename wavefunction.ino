@@ -23,12 +23,17 @@ ISR(TIMER1_COMPA_vect) {
   // This code executes exactly once every second
 }
 
-
 void loop() {
-  volatile float x = 1.0f;
+  if (Serial.available()) {
+    String data = Serial.readStringUntil('\n');
 
-  for (int i = 0; i < 50000; i++) {
-    x = x * 1.00001f + 0.00001f;
+    int comma = data.indexOf(',');
+
+    if (comma > 0) {
+      int x = data.substring(0, comma).toInt();
+      int y = data.substring(comma + 1).toInt();
+
+      x = x * y;
+    }
   }
-
 }
