@@ -25,15 +25,10 @@ ISR(TIMER1_COMPA_vect) {
 
 void loop() {
   if (Serial.available()) {
-    String data = Serial.readStringUntil('\n');
+    int level = Serial.parseInt();
 
-    int comma = data.indexOf(',');
+    level = constrain(level, 0, 255);
 
-    if (comma > 0) {
-      int x = data.substring(0, comma).toInt();
-      int y = data.substring(comma + 1).toInt();
-
-      x = x * y;
+    level = level * level;
     }
   }
-}
