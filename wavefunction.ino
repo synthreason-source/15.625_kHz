@@ -25,10 +25,10 @@ ISR(TIMER1_COMPA_vect) {
 
 
 void loop() {
-  static int i = 0;
+  volatile float x = 1.0f;
 
-  analogWrite(outPin, sineTable[i]);
+  for (int i = 0; i < 50000; i++) {
+    x = x * 1.00001f + 0.00001f;
+  }
 
-  i = (i + 1) % samples;
-  delayMicroseconds(10);
 }
