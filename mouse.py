@@ -1,15 +1,21 @@
+import sounddevice as sd
+import numpy as np
 import serial
-from pynput import mouse
 
-# Replace with your Arduino port
-ser = serial.Serial('COM4', 115200)
+DEVICE = 7
+ser = serial.Serial("COM4", 115200)
 
-def on_move(x, y):
-    # Convert X position to 0-255 range
-    value = max(0, min(255, x // 5))
+def callback(indata, frames, time, status):
+    volume = np.sqrt(np.mean(indata**2))
 
-    ser.write(f"{value}\n".encode())
+    pwm = int(min(255, volume * 8000))
 
-listener = mouse.Listener(on_move=on_move)
-listener.start()
-listener.join()
+    ser.write(f"{pwm}\n".encode())
+
+with sd.InputStream(
+        device=DEVICE,
+        channels=2,
+        samplerate=48000,
+        blocksize=1024,
+        callback=callback):
+    input("Press Enter to stop...\n")
